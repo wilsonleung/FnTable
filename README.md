@@ -1,4 +1,3 @@
-# react-ts-component-template
-React Typescript Ladle Component with Vite
+# FnTable
 
-This is a template project setup with React, Typescript, Ladle and Vite for building library
+A POC of react table component using Tanstack Table

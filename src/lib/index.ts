@@ -1,1 +1,1 @@
-export { default as MyButton } from './button/Button';
+export { default as FnTable} from '@/fn-table/FnTable';

@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react-swc'
 import dts from 'vite-plugin-dts';
+import tsconfigPaths from 'vite-tsconfig-paths'
 import path from 'node:path';
 
 // reference:
@@ -15,13 +16,15 @@ export default defineConfig({
     dts({
       insertTypesEntry: true,
     }),
+    // resolve import using tsconfig path mapping
+    tsconfigPaths()
   ],
   build: {
     lib: {
       entry: path.resolve(__dirname, 'src/lib/index.ts'),
-      name: 'MyLib',
+      name: 'fn-table',
       formats: ['es', 'umd'],
-      fileName: (format) => `my-lib.${format}.js`,
+      fileName: (format) => `fn-table.${format}.js`,
     },
     rollupOptions: {
       // externalize dependencies and not want to bundle into the library

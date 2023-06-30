@@ -1,27 +1,12 @@
 import { ColumnDef, ColumnHelper, createColumnHelper, flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import React from "react";
 
-
 export interface FnTableProps<T> {
   data: T[];
   columnsFn: (column: ColumnHelper<T>) => ColumnDef<T, any>[];
 }
 
 function FnTable<T>({ data, columnsFn }: React.PropsWithChildren<FnTableProps<T>>) {
-
-  // console.log('[FnTable] ... values =', values)
-  // const columnHelper = createColumnHelper<T>();
-  // const columns: ColumnDef<T>[] = [];
-  //
-  // React.Children.forEach(children, element => {
-  //   if (!React.isValidElement(element)) return
-  //
-  //   const { id } = element.props as FnColumnProps;
-  //   console.log('[FnTable] ...', id);
-  //   columns.push(
-  //     columnHelper.accessor(row => row[id], { cell: info => info.getValue() })
-  //   )
-  // })
 
   const helper = createColumnHelper<T>();
 

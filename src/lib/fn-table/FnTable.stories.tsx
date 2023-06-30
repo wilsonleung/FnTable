@@ -39,6 +39,10 @@ const columnsFn = (column: ColumnHelper<Person>) => {
       header: 'Married',
       cell: info => info.renderValue() ? 'Y' : 'N'
     }),
+    column.display({
+      header: 'Full Name',
+      cell: info => `${info.row.getValue('firstName')} ${info.row.getValue('lastName')}`
+    }),
 
   ]
 }

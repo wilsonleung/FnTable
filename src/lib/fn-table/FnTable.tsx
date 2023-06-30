@@ -1,12 +1,81 @@
-export interface FnTableProps {
-  title: string
+import { ColumnDef, ColumnHelper, createColumnHelper, flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
+import React from "react";
+
+
+export interface FnTableProps<T> {
+  data: T[];
+  columnsFn: (column: ColumnHelper<T>) => ColumnDef<T, any>[];
 }
 
-function FnTable({ title, children }: React.PropsWithChildren<FnTableProps>) {
-  return <div>
-    <h1>{title}</h1>
-    {children}
-  </div>
+function FnTable<T>({ data, columnsFn }: React.PropsWithChildren<FnTableProps<T>>) {
+
+  // console.log('[FnTable] ... values =', values)
+  // const columnHelper = createColumnHelper<T>();
+  // const columns: ColumnDef<T>[] = [];
+  //
+  // React.Children.forEach(children, element => {
+  //   if (!React.isValidElement(element)) return
+  //
+  //   const { id } = element.props as FnColumnProps;
+  //   console.log('[FnTable] ...', id);
+  //   columns.push(
+  //     columnHelper.accessor(row => row[id], { cell: info => info.getValue() })
+  //   )
+  // })
+
+  const helper = createColumnHelper<T>();
+
+  const table = useReactTable<T>({
+    data,
+    columns: columnsFn(helper),
+    getCoreRowModel: getCoreRowModel(),
+  })
+
+  return <table>
+    <thead>
+      {table.getHeaderGroups().map(headerGroup => (
+        <tr key={headerGroup.id}>
+          {headerGroup.headers.map(header => (
+            <th key={header.id}>
+              {header.isPlaceholder
+                ? null
+                : flexRender(
+                  header.column.columnDef.header,
+                  header.getContext()
+                )}
+            </th>
+          ))}
+        </tr>
+      ))}
+    </thead>
+    <tbody>
+      {table.getRowModel().rows.map(row => (
+        <tr key={row.id}>
+          {row.getVisibleCells().map(cell => (
+            <td key={cell.id}>
+              {flexRender(cell.column.columnDef.cell, cell.getContext())}
+            </td>
+          ))}
+        </tr>
+      ))}
+    </tbody>
+    <tfoot>
+      {table.getFooterGroups().map(footerGroup => (
+        <tr key={footerGroup.id}>
+          {footerGroup.headers.map(header => (
+            <th key={header.id}>
+              {header.isPlaceholder
+                ? null
+                : flexRender(
+                  header.column.columnDef.footer,
+                  header.getContext()
+                )}
+            </th>
+          ))}
+        </tr>
+      ))}
+    </tfoot>
+  </table>
 }
 
 export default FnTable;

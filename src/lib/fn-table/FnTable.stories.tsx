@@ -34,12 +34,14 @@ const columnsFn = (column: ColumnHelper<Person>) => {
       header: () => <i style={{ color: 'red' }}>Last Name</i>
     }),
     column.accessor(row => row.age, {
-      header: 'Age'
+      header: 'Age',
+      meta: { align: 'right' }
     }),
     column.accessor('married', {
       header: 'Married',
       cell: info => info.getValue() ? 'Y' : 'N',
-      size: 80
+      size: 80,
+      meta: { align: 'middle' }
     }),
     column.display({
       header: 'Full Name',

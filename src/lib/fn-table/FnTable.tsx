@@ -21,7 +21,10 @@ function FnTable<T>({ data, columnsFn }: React.PropsWithChildren<FnTableProps<T>
       {table.getHeaderGroups().map(headerGroup => (
         <tr key={headerGroup.id}>
           {headerGroup.headers.map(header => (
-            <th key={header.id} style={{ width: (header.getSize()) + 'px' }}>
+            <th key={header.id} style={{
+              width: (header.getSize()) + 'px',
+              textAlign: (header.column.columnDef.meta as any)?.align || 'left'
+            }}>
               {header.isPlaceholder
                 ? null
                 : flexRender(

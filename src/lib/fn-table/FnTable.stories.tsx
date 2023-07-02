@@ -27,7 +27,8 @@ const data: Person[] = [
 const columnsFn = (column: ColumnHelper<Person>) => {
   return [
     column.accessor('firstName', {
-      header: 'First Name'
+      header: 'First Name',
+      size: 200,
     }),
     column.accessor('lastName', {
       header: () => <i style={{ color: 'red' }}>Last Name</i>
@@ -37,7 +38,8 @@ const columnsFn = (column: ColumnHelper<Person>) => {
     }),
     column.accessor('married', {
       header: 'Married',
-      cell: info => info.renderValue() ? 'Y' : 'N'
+      cell: info => info.getValue() ? 'Y' : 'N',
+      size: 80
     }),
     column.display({
       header: 'Full Name',

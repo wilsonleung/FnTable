@@ -1,5 +1,7 @@
 import { ColumnDef, ColumnHelper, createColumnHelper, flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
-import React from "react";
+import React, { useMemo } from "react";
+
+import './FnTable.css';
 
 export interface FnTableProps<T> {
   data: T[];
@@ -14,9 +16,15 @@ function FnTable<T>({ data, columnsFn }: React.PropsWithChildren<FnTableProps<T>
     data,
     columns: columnsFn(helper),
     getCoreRowModel: getCoreRowModel(),
+    defaultColumn: { footer: () => null }
   })
 
-  return <table>
+  const tableClasses = useMemo(() => {
+    const classList = ["fn-table", 'w-full'];
+    return classList.join(' ');
+  }, []);
+
+  return <table className={tableClasses}>
     <thead>
       {table.getHeaderGroups().map(headerGroup => (
         <tr key={headerGroup.id}>
@@ -47,22 +55,24 @@ function FnTable<T>({ data, columnsFn }: React.PropsWithChildren<FnTableProps<T>
         </tr>
       ))}
     </tbody>
-    <tfoot>
-      {table.getFooterGroups().map(footerGroup => (
-        <tr key={footerGroup.id}>
-          {footerGroup.headers.map(header => (
-            <th key={header.id}>
-              {header.isPlaceholder
-                ? null
-                : flexRender(
-                  header.column.columnDef.footer,
-                  header.getContext()
-                )}
-            </th>
-          ))}
-        </tr>
-      ))}
-    </tfoot>
+    {table.getFooterGroups().length > 0 &&
+      <tfoot>
+        {table.getFooterGroups().map(footerGroup => (
+          <tr key={footerGroup.id}>
+            {footerGroup.headers.map(header => (
+              <th key={header.id}>
+                {header.isPlaceholder
+                  ? null
+                  : flexRender(
+                    header.column.columnDef.footer,
+                    header.getContext()
+                  )}
+              </th>
+            ))}
+          </tr>
+        ))}
+      </tfoot>
+    }
   </table>
 }
 

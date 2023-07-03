@@ -1,0 +1,18 @@
+.fn-table {
+  font-family: inherit;
+  border-collapse: collapse;
+}
+
+.fn-table :is(th, td) {
+  border: 1px silver solid;
+  margin: 5px;
+  padding: 5px;
+}
+
+.fn-table :is(thead, tfoot) th {
+  background-color: #ededed;
+}
+
+.w-full{
+  width: 100%
+}

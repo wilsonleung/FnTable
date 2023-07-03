@@ -6,9 +6,10 @@ import './FnTable.css';
 export interface FnTableProps<T> {
   data: T[];
   columnsFn: (column: ColumnHelper<T>) => ColumnDef<T, any>[];
+  showFooter?: boolean;
 }
 
-function FnTable<T>({ data, columnsFn }: React.PropsWithChildren<FnTableProps<T>>) {
+function FnTable<T>({ data, columnsFn, showFooter = false }: React.PropsWithChildren<FnTableProps<T>>) {
 
   const helper = createColumnHelper<T>();
 
@@ -55,7 +56,7 @@ function FnTable<T>({ data, columnsFn }: React.PropsWithChildren<FnTableProps<T>
         </tr>
       ))}
     </tbody>
-    {table.getFooterGroups().length > 0 &&
+    {showFooter &&
       <tfoot>
         {table.getFooterGroups().map(footerGroup => (
           <tr key={footerGroup.id}>

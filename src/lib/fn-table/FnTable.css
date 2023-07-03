@@ -5,8 +5,8 @@
 
 .fn-table :is(th, td) {
   border: 1px silver solid;
-  margin: 5px;
-  padding: 5px;
+  margin: 0.3rem;
+  padding: 0.3rem;
 }
 
 .fn-table :is(thead, tfoot) th {

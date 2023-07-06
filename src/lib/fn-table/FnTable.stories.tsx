@@ -1,8 +1,8 @@
 import type { StoryDefault, Story } from "@ladle/react";
-import FnTable, { FnTableProps } from "@/fn-table/FnTable";
+import FnTable, { FnColumn, FnTableProps } from "@/fn-table/FnTable";
 import { ColumnHelper } from "@tanstack/react-table";
 
-interface Person {
+type Person = {
   firstName: string;
   lastName: string;
   age: number;
@@ -23,6 +23,34 @@ const data: Person[] = [
     married: true
   }
 ];
+
+
+const defaultColumn: FnColumn<Person> = {
+  width: 200,
+  alignment: 'center',
+
+};
+
+const columns: FnColumn<Person>[] = [
+  {
+    key: 'firstName',
+    header: "First Name",
+  },
+  {
+    key: 'lastName',
+    header: "Last Name",
+  },
+  {
+    key: 'age',
+    header: "Age",
+  }
+  , {
+    key: 'married',
+    header: "Married",
+  }
+
+]
+
 
 const columnsFn = (column: ColumnHelper<Person>) => {
   return [
@@ -58,7 +86,9 @@ export const table: Story<FnTableProps<Person>> = (args) => {
 table.storyName = "Default";
 table.args = {
   data,
-  columnsFn
+  columnsFn,
+  defaultColumn,
+  columns
 }
 
 export default {

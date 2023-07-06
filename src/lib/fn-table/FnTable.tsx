@@ -3,21 +3,51 @@ import React, { useMemo } from "react";
 
 import './FnTable.css';
 
+export interface FnColumn<T> {
+  width?: number;
+  header?: string;
+  key?: keyof T & string;
+  alignment?: 'left' | 'right' | 'center'
+}
+
 export interface FnTableProps<T> {
   data: T[];
   columnsFn: (column: ColumnHelper<T>) => ColumnDef<T, any>[];
   showFooter?: boolean;
+  defaultColumn?: FnColumn<T>;
+  columns?: FnColumn<T>[];
 }
 
-function FnTable<T>({ data, columnsFn, showFooter = false }: React.PropsWithChildren<FnTableProps<T>>) {
+
+function FnTable<T extends object>({ data, columnsFn, showFooter = false, defaultColumn, columns }: React.PropsWithChildren<FnTableProps<T>>) {
 
   const helper = createColumnHelper<T>();
 
+  const cols: ColumnDef<T, any>[] = [];
+
+  if (columns) {
+    columns.forEach(col => {
+      cols.push(
+        helper.accessor((row) => {
+          if (col.key && col.key in row) {
+            return row[col.key];
+          }
+          return '';
+        }, {
+          id: col.key || '',
+          header: col.header,
+          size: col.width,
+        })
+      )
+    })
+  }
+
+
   const table = useReactTable<T>({
     data,
-    columns: columnsFn(helper),
+    columns: cols,
     getCoreRowModel: getCoreRowModel(),
-    defaultColumn: { footer: () => null }
+    defaultColumn: { size: defaultColumn?.width, meta: { align: defaultColumn?.alignment } }
   })
 
   const tableClasses = useMemo(() => {

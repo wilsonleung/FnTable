@@ -43,6 +43,7 @@ const columns: FnColumn<Person>[] = [
   {
     key: 'age',
     header: "Age",
+    alignment: 'right'
   }
   , {
     key: 'married',

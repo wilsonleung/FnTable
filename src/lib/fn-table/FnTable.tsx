@@ -27,6 +27,7 @@ function FnTable<T extends object>({ data, columnsFn, showFooter = false, defaul
 
   if (columns) {
     columns.forEach(col => {
+      const meta = col.alignment ? { align: col.alignment } : undefined;
       cols.push(
         helper.accessor((row) => {
           if (col.key && col.key in row) {
@@ -37,6 +38,7 @@ function FnTable<T extends object>({ data, columnsFn, showFooter = false, defaul
           id: col.key || '',
           header: col.header,
           size: col.width,
+          meta
         })
       )
     })
@@ -79,7 +81,9 @@ function FnTable<T extends object>({ data, columnsFn, showFooter = false, defaul
       {table.getRowModel().rows.map(row => (
         <tr key={row.id}>
           {row.getVisibleCells().map(cell => (
-            <td key={cell.id}>
+            <td key={cell.id} style={{
+              textAlign: (cell.column.columnDef.meta as any)?.align || 'left'
+            }}>
               {flexRender(cell.column.columnDef.cell, cell.getContext())}
             </td>
           ))}

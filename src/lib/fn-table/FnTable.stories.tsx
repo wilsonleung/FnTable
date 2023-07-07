@@ -48,6 +48,7 @@ const columns: FnColumn<Person>[] = [
   , {
     key: 'married',
     header: "Married",
+    cellRenderer: (getValue) => getValue() ? <span style={{ color: 'red' }}>Y</span> : <span style={{ color: 'green' }}>N</span>
   }
 
 ]

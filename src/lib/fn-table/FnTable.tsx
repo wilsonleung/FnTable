@@ -1,4 +1,4 @@
-import { ColumnDef, ColumnHelper, createColumnHelper, flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
+import { CellContext, ColumnDef, ColumnHelper, createColumnHelper, flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import React, { useMemo } from "react";
 
 import './FnTable.css';
@@ -7,7 +7,8 @@ export interface FnColumn<T> {
   width?: number;
   header?: string;
   key?: keyof T & string;
-  alignment?: 'left' | 'right' | 'center'
+  alignment?: 'left' | 'right' | 'center';
+  cellRenderer?: (getValue: () => any) => any;
 }
 
 export interface FnTableProps<T> {
@@ -28,6 +29,12 @@ function FnTable<T extends object>({ data, columnsFn, showFooter = false, defaul
   if (columns) {
     columns.forEach(col => {
       const meta = col.alignment ? { align: col.alignment } : undefined;
+      //let cell = col.cellRenderer ? (info: CellContext<T, unknown>) => col.cellRenderer(info.getValue) : (info: CellContext<T, any>) => info.getValue();
+      let cell = (info: CellContext<T, any>) => info.getValue();
+      if (typeof col.cellRenderer === 'function') {
+        cell = (info: CellContext<T, any>) => col.cellRenderer!(info.getValue);
+      }
+
       cols.push(
         helper.accessor((row) => {
           if (col.key && col.key in row) {
@@ -38,6 +45,7 @@ function FnTable<T extends object>({ data, columnsFn, showFooter = false, defaul
           id: col.key || '',
           header: col.header,
           size: col.width,
+          cell,
           meta
         })
       )

@@ -1,4 +1,4 @@
-import { CellContext, ColumnDef, ColumnHelper, createColumnHelper, flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
+import { CellContext, ColumnDef, createColumnHelper, flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import React, { useMemo } from "react";
 
 import './FnTable.css';
@@ -13,19 +13,28 @@ export interface FnColumn<T> {
 
 export interface FnTableProps<T> {
   data: T[];
-  // columnsFn: (column: ColumnHelper<T>) => ColumnDef<T, any>[];
   showFooter?: boolean;
   defaultColumn?: FnColumn<T>;
   columns?: FnColumn<T>[];
+  showSequence?: boolean;
   selectionMode?: 'multiple' | 'single';
 }
 
 
-function FnTable<T extends object>({ data, selectionMode, showFooter = false, defaultColumn, columns }: React.PropsWithChildren<FnTableProps<T>>) {
+function FnTable<T extends object>({ data, showSequence = false, selectionMode, showFooter = false, defaultColumn, columns }: React.PropsWithChildren<FnTableProps<T>>) {
 
   const helper = createColumnHelper<T>();
 
   const cols: ColumnDef<T, any>[] = [];
+
+  if (showSequence) {
+    cols.push(helper.display({
+      id: '__seq__',
+      header: "#",
+      cell: (props) => props.row.index + 1,
+      size: 60 
+    }))
+  }
 
   if (columns) {
     columns.forEach(col => {

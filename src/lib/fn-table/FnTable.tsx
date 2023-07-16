@@ -3,6 +3,7 @@ import React, { useCallback, useMemo, useState } from "react";
 
 import './FnTable.css';
 import MultiSelectCellRenderer from "./display-columns/MultiSelectCellRenderer";
+import SingleSelectCellRenderer from "./display-columns/SingleSelectCellRenderer";
 
 export interface FnColumn<T> {
   width?: number;
@@ -55,6 +56,19 @@ function FnTable<T extends object>({ data, showSequence = false, selectionMode, 
       />,
       size: 30,
     }))
+  }
+
+  if (selectionMode === 'single') {
+    cols.push(helper.display({
+      id: '__select__',
+      cell: ({ row }) => <SingleSelectCellRenderer
+        checked={row.getIsSelected()}
+        disabled={!row.getCanSelect()}
+        onChange={row.getToggleSelectedHandler()}
+      />,
+      size: 30,
+    }))
+
   }
 
 

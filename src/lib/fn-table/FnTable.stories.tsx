@@ -68,6 +68,19 @@ multiSelect.args = {
   selectionMode: 'multiple'
 }
 
+export const singleSelect: Story<FnTableProps<Person>> = (args) => {
+  return <FnTable {...args} />
+}
+
+singleSelect.storyName = "Single Select";
+singleSelect.args = {
+  data,
+  defaultColumn,
+  columns,
+  showSequence: true,
+  selectionMode: 'single'
+}
+
 export default {
   title: "Table",
 } satisfies StoryDefault;

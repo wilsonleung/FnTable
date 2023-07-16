@@ -1,29 +1,10 @@
 import type { StoryDefault, Story } from "@ladle/react";
 import FnTable, { FnColumn, FnTableProps } from "@/fn-table/FnTable";
 import { ColumnHelper } from "@tanstack/react-table";
+import { Person, createPeopleList } from "@/stories/util/test-data";
 
-type Person = {
-  firstName: string;
-  lastName: string;
-  age: number;
-  married: boolean;
-}
 
-const data: Person[] = [
-  {
-    firstName: 'He',
-    lastName: 'Man',
-    age: 20,
-    married: false
-  },
-  {
-    firstName: 'She',
-    lastName: 'Ra',
-    age: 19,
-    married: true
-  }
-];
-
+const data: Person[] = createPeopleList(20);
 
 const defaultColumn: FnColumn<Person> = {
   width: 200,

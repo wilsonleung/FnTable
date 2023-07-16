@@ -13,14 +13,15 @@ export interface FnColumn<T> {
 
 export interface FnTableProps<T> {
   data: T[];
-  columnsFn: (column: ColumnHelper<T>) => ColumnDef<T, any>[];
+  // columnsFn: (column: ColumnHelper<T>) => ColumnDef<T, any>[];
   showFooter?: boolean;
   defaultColumn?: FnColumn<T>;
   columns?: FnColumn<T>[];
+  selectionMode?: 'multiple' | 'single';
 }
 
 
-function FnTable<T extends object>({ data, columnsFn, showFooter = false, defaultColumn, columns }: React.PropsWithChildren<FnTableProps<T>>) {
+function FnTable<T extends object>({ data, selectionMode, showFooter = false, defaultColumn, columns }: React.PropsWithChildren<FnTableProps<T>>) {
 
   const helper = createColumnHelper<T>();
 

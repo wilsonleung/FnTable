@@ -1,7 +1,8 @@
-import { CellContext, ColumnDef, createColumnHelper, flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
-import React, { useMemo } from "react";
+import { CellContext, ColumnDef, OnChangeFn, RowSelectionState, createColumnHelper, flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
+import React, { useCallback, useMemo, useState } from "react";
 
 import './FnTable.css';
+import MultiSelectCellRenderer from "./display-columns/MultiSelectCellRenderer";
 
 export interface FnColumn<T> {
   width?: number;
@@ -23,6 +24,8 @@ export interface FnTableProps<T> {
 
 function FnTable<T extends object>({ data, showSequence = false, selectionMode, showFooter = false, defaultColumn, columns }: React.PropsWithChildren<FnTableProps<T>>) {
 
+  const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({});
+
   const helper = createColumnHelper<T>();
 
   const cols: ColumnDef<T, any>[] = [];
@@ -32,9 +35,28 @@ function FnTable<T extends object>({ data, showSequence = false, selectionMode, 
       id: '__seq__',
       header: "#",
       cell: (props) => props.row.index + 1,
-      size: 60 
+      size: 60
     }))
   }
+
+  if (selectionMode === 'multiple') {
+    cols.push(helper.display({
+      id: '__select__',
+      header: ({ table }) => <MultiSelectCellRenderer
+        checked={table.getIsAllRowsSelected()}
+        indeterminate={table.getIsSomeRowsSelected()}
+        onChange={table.getToggleAllRowsSelectedHandler()}
+      />,
+      cell: ({ row }) => <MultiSelectCellRenderer
+        checked={row.getIsSelected()}
+        disabled={!row.getCanSelect()}
+        indeterminate={row.getIsSomeSelected()}
+        onChange={row.getToggleSelectedHandler()}
+      />,
+      size: 30,
+    }))
+  }
+
 
   if (columns) {
     columns.forEach(col => {
@@ -67,8 +89,12 @@ function FnTable<T extends object>({ data, showSequence = false, selectionMode, 
     data,
     columns: cols,
     getCoreRowModel: getCoreRowModel(),
-    defaultColumn: { size: defaultColumn?.width, meta: { align: defaultColumn?.alignment } }
+    defaultColumn: { size: defaultColumn?.width, meta: { align: defaultColumn?.alignment } },
+    enableRowSelection: selectionMode === 'multiple' || selectionMode === 'single',
+    enableMultiRowSelection: selectionMode === 'multiple'
   })
+
+  console.log('xxx', table.getSelectedRowModel().rows);
 
   const tableClasses = useMemo(() => {
     const classList = ["fn-table", 'w-full'];

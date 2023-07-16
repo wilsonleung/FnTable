@@ -55,6 +55,18 @@ sequence.args = {
   showSequence: true
 }
 
+export const multiSelect: Story<FnTableProps<Person>> = (args) => {
+  return <FnTable {...args} />
+}
+
+multiSelect.storyName = "Multi Select";
+multiSelect.args = {
+  data,
+  defaultColumn,
+  columns,
+  showSequence: true,
+  selectionMode: 'multiple'
+}
 
 export default {
   title: "Table",

@@ -1,16 +1,22 @@
-import { CellContext, ColumnDef, OnChangeFn, RowSelectionState, createColumnHelper, flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
+import { CellContext, ColumnDef, ColumnHelper, OnChangeFn, Row, RowSelectionState, Updater, createColumnHelper, flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import React, { useCallback, useMemo, useState } from "react";
 
 import './FnTable.css';
 import MultiSelectCellRenderer from "./display-columns/MultiSelectCellRenderer";
 import SingleSelectCellRenderer from "./display-columns/SingleSelectCellRenderer";
 
+type HeaderType<T> = string | ((childs: FnColumn<T>[]) => any);
+
 export interface FnColumn<T> {
   width?: number;
-  header?: string;
-  key?: keyof T & string;
+  header?: HeaderType<T>;
+  // todo: how to enforce the key is one of the object property or any string?
+  // key?: keyof T & string;
+  key?: string;
   alignment?: 'left' | 'right' | 'center';
+  // only left node will render cell renderer
   cellRenderer?: (getValue: () => any) => any;
+  childs?: FnColumn<T>[];
 }
 
 export interface FnTableProps<T> {
@@ -21,6 +27,54 @@ export interface FnTableProps<T> {
   showSequence?: boolean;
   selectionMode?: 'multiple' | 'single';
 }
+
+function buildHeader<T extends object>(column: FnColumn<T>) {
+
+  let header;
+  if (typeof column.header === 'function') {
+    const result = column.header(column.childs || []);
+    header = () => result;
+  } else if (typeof column.header === 'string') {
+    header = column.header;
+  }
+
+  return header;
+
+}
+
+function buildColumns<T extends object>(helper: ColumnHelper<T>, column: FnColumn<T>): ColumnDef<T, any> {
+
+  if (column.childs && column.childs.length > 0) {
+    const columns = column.childs.map(col => buildColumns(helper, col));
+    return helper.group({
+      id: column.key || '',
+      header: buildHeader(column),
+      columns
+    });
+  }
+
+  const meta = column.alignment ? { align: column.alignment } : undefined;
+  //let cell = col.cellRenderer ? (info: CellContext<T, unknown>) => col.cellRenderer(info.getValue) : (info: CellContext<T, any>) => info.getValue();
+  let cell = (info: CellContext<T, any>) => info.getValue();
+  if (typeof column.cellRenderer === 'function') {
+    cell = (info: CellContext<T, any>) => column.cellRenderer!(info.getValue);
+  }
+
+  return helper.accessor((row: any) => {
+    if (column.key && column.key in row) {
+      return row[column.key];
+    }
+    return '';
+  }, {
+    id: column.key || '',
+    header: buildHeader(column),
+    size: column.width,
+    cell,
+    meta
+  })
+
+}
+
 
 
 function FnTable<T extends object>({ data, showSequence = false, selectionMode, showFooter = false, defaultColumn, columns }: React.PropsWithChildren<FnTableProps<T>>) {
@@ -74,29 +128,19 @@ function FnTable<T extends object>({ data, showSequence = false, selectionMode, 
 
   if (columns) {
     columns.forEach(col => {
-      const meta = col.alignment ? { align: col.alignment } : undefined;
-      //let cell = col.cellRenderer ? (info: CellContext<T, unknown>) => col.cellRenderer(info.getValue) : (info: CellContext<T, any>) => info.getValue();
-      let cell = (info: CellContext<T, any>) => info.getValue();
-      if (typeof col.cellRenderer === 'function') {
-        cell = (info: CellContext<T, any>) => col.cellRenderer!(info.getValue);
-      }
-
       cols.push(
-        helper.accessor((row) => {
-          if (col.key && col.key in row) {
-            return row[col.key];
-          }
-          return '';
-        }, {
-          id: col.key || '',
-          header: col.header,
-          size: col.width,
-          cell,
-          meta
-        })
-      )
-    })
+        buildColumns(helper, col)
+      );
+    });
   }
+
+  const rowSelectionChangeHandler = useCallback((updater: Updater<RowSelectionState>) => {
+    if (typeof updater === 'function') {
+      const updatedState = updater(rowSelection);
+      console.log('[rowSelectionChangeHandler]', updatedState);
+      setRowSelection(updatedState);
+    }
+  }, [rowSelection]);
 
 
   const table = useReactTable<T>({
@@ -105,10 +149,13 @@ function FnTable<T extends object>({ data, showSequence = false, selectionMode, 
     getCoreRowModel: getCoreRowModel(),
     defaultColumn: { size: defaultColumn?.width, meta: { align: defaultColumn?.alignment } },
     enableRowSelection: selectionMode === 'multiple' || selectionMode === 'single',
-    enableMultiRowSelection: selectionMode === 'multiple'
-  })
+    enableMultiRowSelection: selectionMode === 'multiple',
+    state: {
+      rowSelection
+    },
+    onRowSelectionChange: rowSelectionChangeHandler,
 
-  console.log('xxx', table.getSelectedRowModel().rows);
+  })
 
   const tableClasses = useMemo(() => {
     const classList = ["fn-table", 'w-full'];
@@ -119,8 +166,8 @@ function FnTable<T extends object>({ data, showSequence = false, selectionMode, 
     <thead>
       {table.getHeaderGroups().map(headerGroup => (
         <tr key={headerGroup.id}>
-          {headerGroup.headers.map(header => (
-            <th key={header.id} style={{
+          {headerGroup.headers.map(header => {
+            return <th key={header.id} colSpan={header.colSpan} style={{
               width: (header.getSize()) + 'px',
               textAlign: (header.column.columnDef.meta as any)?.align || 'left'
             }}>
@@ -131,7 +178,8 @@ function FnTable<T extends object>({ data, showSequence = false, selectionMode, 
                   header.getContext()
                 )}
             </th>
-          ))}
+
+          })}
         </tr>
       ))}
     </thead>

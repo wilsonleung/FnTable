@@ -32,11 +32,41 @@ const columns: FnColumn<Person>[] = [
   }
 ]
 
+
+const columnsWithGroup: FnColumn<Person>[] = [
+  {
+    key: 'name',
+    header: 'Name',
+    childs: [
+      {
+        key: 'firstName',
+        header: "First Name",
+      },
+      {
+        key: 'lastName',
+        header: "Last Name",
+      },
+
+    ]
+  },
+  {
+    key: 'age',
+    header: "Age",
+    alignment: 'right'
+  }
+  , {
+    key: 'married',
+    header: "Married",
+    cellRenderer: (getValue) => getValue() ? <span style={{ color: 'red' }}>Y</span> : <span style={{ color: 'green' }}>N</span>
+  }
+]
+
+
 export const table: Story<FnTableProps<Person>> = (args) => {
   return <FnTable {...args} />
 }
 
-table.storyName = "Default";
+table.storyName = "Basic";
 table.args = {
   data,
   defaultColumn,
@@ -80,6 +110,20 @@ singleSelect.args = {
   showSequence: true,
   selectionMode: 'single'
 }
+
+
+export const columnGroup: Story<FnTableProps<Person>> = (args) => {
+  return <FnTable {...args} />
+}
+
+columnGroup.storyName = "Column Group";
+columnGroup.args = {
+  data,
+  defaultColumn,
+  columns: columnsWithGroup,
+  showSequence: true,
+}
+
 
 export default {
   title: "Table",

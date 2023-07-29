@@ -1,9 +1,21 @@
-import { CellContext, ColumnDef, ColumnHelper, OnChangeFn, Row, RowSelectionState, Updater, createColumnHelper, flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
-import React, { useCallback, useMemo, useState } from "react";
+import {
+  CellContext,
+  ColumnDef,
+  ColumnHelper,
+  OnChangeFn,
+  Row,
+  RowSelectionState,
+  Updater,
+  createColumnHelper,
+  flexRender,
+  getCoreRowModel,
+  useReactTable,
+} from '@tanstack/react-table';
+import React, { useCallback, useMemo } from 'react';
 
 import './FnTable.css';
-import MultiSelectCellRenderer from "./display-columns/MultiSelectCellRenderer";
-import SingleSelectCellRenderer from "./display-columns/SingleSelectCellRenderer";
+import MultiSelectCellRenderer from './display-columns/MultiSelectCellRenderer';
+import SingleSelectCellRenderer from './display-columns/SingleSelectCellRenderer';
 
 type HeaderType<T> = string | ((childs: FnColumn<T>[]) => any);
 
@@ -29,7 +41,6 @@ export interface FnTableProps<T> {
 }
 
 function buildHeader<T extends object>(column: FnColumn<T>) {
-
   let header;
   if (typeof column.header === 'function') {
     const result = column.header(column.childs || []);
@@ -39,46 +50,53 @@ function buildHeader<T extends object>(column: FnColumn<T>) {
   }
 
   return header;
-
 }
 
-function buildColumns<T extends object>(helper: ColumnHelper<T>, column: FnColumn<T>): ColumnDef<T, any> {
-
+function buildColumns<T extends object>(
+  helper: ColumnHelper<T>,
+  column: FnColumn<T>
+): ColumnDef<T, any> {
   if (column.childs && column.childs.length > 0) {
-    const columns = column.childs.map(col => buildColumns(helper, col));
+    const columns = column.childs.map((col) => buildColumns(helper, col));
     return helper.group({
       id: column.key || '',
       header: buildHeader(column),
-      columns
+      columns,
     });
   }
 
   const meta = column.alignment ? { align: column.alignment } : undefined;
-  //let cell = col.cellRenderer ? (info: CellContext<T, unknown>) => col.cellRenderer(info.getValue) : (info: CellContext<T, any>) => info.getValue();
+  // let cell = col.cellRenderer ? (info: CellContext<T, unknown>) => col.cellRenderer(info.getValue) : (info: CellContext<T, any>) => info.getValue();
   let cell = (info: CellContext<T, any>) => info.getValue();
   if (typeof column.cellRenderer === 'function') {
     cell = (info: CellContext<T, any>) => column.cellRenderer!(info.getValue);
   }
 
-  return helper.accessor((row: any) => {
-    if (column.key && column.key in row) {
-      return row[column.key];
+  return helper.accessor(
+    (row: any) => {
+      if (column.key && column.key in row) {
+        return row[column.key];
+      }
+      return '';
+    },
+    {
+      id: column.key || '',
+      header: buildHeader(column),
+      size: column.width,
+      cell,
+      meta,
     }
-    return '';
-  }, {
-    id: column.key || '',
-    header: buildHeader(column),
-    size: column.width,
-    cell,
-    meta
-  })
-
+  );
 }
 
-
-
-function FnTable<T extends object>({ data, showSequence = false, selectionMode, showFooter = false, defaultColumn, columns }: React.PropsWithChildren<FnTableProps<T>>) {
-
+function FnTable<T extends object>({
+  data,
+  showSequence = false,
+  selectionMode,
+  showFooter = false,
+  defaultColumn,
+  columns,
+}: React.PropsWithChildren<FnTableProps<T>>) {
   const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({});
 
   const helper = createColumnHelper<T>();
@@ -86,135 +104,160 @@ function FnTable<T extends object>({ data, showSequence = false, selectionMode, 
   const cols: ColumnDef<T, any>[] = [];
 
   if (showSequence) {
-    cols.push(helper.display({
-      id: '__seq__',
-      header: "#",
-      cell: (props) => props.row.index + 1,
-      size: 60
-    }))
+    cols.push(
+      helper.display({
+        id: '__seq__',
+        header: '#',
+        cell: (props) => props.row.index + 1,
+        size: 60,
+      })
+    );
   }
 
   if (selectionMode === 'multiple') {
-    cols.push(helper.display({
-      id: '__select__',
-      header: ({ table }) => <MultiSelectCellRenderer
-        checked={table.getIsAllRowsSelected()}
-        indeterminate={table.getIsSomeRowsSelected()}
-        onChange={table.getToggleAllRowsSelectedHandler()}
-      />,
-      cell: ({ row }) => <MultiSelectCellRenderer
-        checked={row.getIsSelected()}
-        disabled={!row.getCanSelect()}
-        indeterminate={row.getIsSomeSelected()}
-        onChange={row.getToggleSelectedHandler()}
-      />,
-      size: 30,
-    }))
+    cols.push(
+      helper.display({
+        id: '__select__',
+        header: ({ table }) => (
+          <MultiSelectCellRenderer
+            checked={table.getIsAllRowsSelected()}
+            indeterminate={table.getIsSomeRowsSelected()}
+            onChange={table.getToggleAllRowsSelectedHandler()}
+          />
+        ),
+        cell: ({ row }) => (
+          <MultiSelectCellRenderer
+            checked={row.getIsSelected()}
+            disabled={!row.getCanSelect()}
+            indeterminate={row.getIsSomeSelected()}
+            onChange={row.getToggleSelectedHandler()}
+          />
+        ),
+        size: 30,
+      })
+    );
   }
 
   if (selectionMode === 'single') {
-    cols.push(helper.display({
-      id: '__select__',
-      cell: ({ row }) => <SingleSelectCellRenderer
-        checked={row.getIsSelected()}
-        disabled={!row.getCanSelect()}
-        onChange={row.getToggleSelectedHandler()}
-      />,
-      size: 30,
-    }))
-
+    cols.push(
+      helper.display({
+        id: '__select__',
+        cell: ({ row }) => (
+          <SingleSelectCellRenderer
+            checked={row.getIsSelected()}
+            disabled={!row.getCanSelect()}
+            onChange={row.getToggleSelectedHandler()}
+          />
+        ),
+        size: 30,
+      })
+    );
   }
 
-
   if (columns) {
-    columns.forEach(col => {
-      cols.push(
-        buildColumns(helper, col)
-      );
+    columns.forEach((col) => {
+      cols.push(buildColumns(helper, col));
     });
   }
 
-  const rowSelectionChangeHandler = useCallback((updater: Updater<RowSelectionState>) => {
-    if (typeof updater === 'function') {
-      const updatedState = updater(rowSelection);
-      console.log('[rowSelectionChangeHandler]', updatedState);
-      setRowSelection(updatedState);
-    }
-  }, [rowSelection]);
-
+  const rowSelectionChangeHandler = useCallback(
+    (updater: Updater<RowSelectionState>) => {
+      if (typeof updater === 'function') {
+        const updatedState = updater(rowSelection);
+        console.log('[rowSelectionChangeHandler]', updatedState);
+        setRowSelection(updatedState);
+      }
+    },
+    [rowSelection]
+  );
 
   const table = useReactTable<T>({
     data,
     columns: cols,
     getCoreRowModel: getCoreRowModel(),
-    defaultColumn: { size: defaultColumn?.width, meta: { align: defaultColumn?.alignment } },
-    enableRowSelection: selectionMode === 'multiple' || selectionMode === 'single',
+    defaultColumn: {
+      size: defaultColumn?.width,
+      meta: { align: defaultColumn?.alignment },
+    },
+    enableRowSelection:
+      selectionMode === 'multiple' || selectionMode === 'single',
     enableMultiRowSelection: selectionMode === 'multiple',
     state: {
-      rowSelection
+      rowSelection,
     },
     onRowSelectionChange: rowSelectionChangeHandler,
-
-  })
+  });
 
   const tableClasses = useMemo(() => {
-    const classList = ["fn-table", 'w-full'];
+    const classList = ['fn-table', 'w-full'];
     return classList.join(' ');
   }, []);
 
-  return <table className={tableClasses}>
-    <thead>
-      {table.getHeaderGroups().map(headerGroup => (
-        <tr key={headerGroup.id}>
-          {headerGroup.headers.map(header => {
-            return <th key={header.id} colSpan={header.colSpan} style={{
-              width: (header.getSize()) + 'px',
-              textAlign: (header.column.columnDef.meta as any)?.align || 'left'
-            }}>
-              {header.isPlaceholder
-                ? null
-                : flexRender(
-                  header.column.columnDef.header,
-                  header.getContext()
-                )}
-            </th>
-
-          })}
-        </tr>
-      ))}
-    </thead>
-    <tbody>
-      {table.getRowModel().rows.map(row => (
-        <tr key={row.id}>
-          {row.getVisibleCells().map(cell => (
-            <td key={cell.id} style={{
-              textAlign: (cell.column.columnDef.meta as any)?.align || 'left'
-            }}>
-              {flexRender(cell.column.columnDef.cell, cell.getContext())}
-            </td>
-          ))}
-        </tr>
-      ))}
-    </tbody>
-    {showFooter &&
-      <tfoot>
-        {table.getFooterGroups().map(footerGroup => (
-          <tr key={footerGroup.id}>
-            {footerGroup.headers.map(header => (
-              <th key={header.id}>
-                {header.isPlaceholder
-                  ? null
-                  : flexRender(
-                    header.column.columnDef.footer,
-                    header.getContext()
-                  )}
-              </th>
+  return (
+    <table className={tableClasses}>
+      <thead>
+        {table.getHeaderGroups().map((headerGroup) => (
+          <tr key={headerGroup.id}>
+            {headerGroup.headers.map((header) => {
+              return (
+                <th
+                  key={header.id}
+                  colSpan={header.colSpan}
+                  style={{
+                    width: header.getSize() + 'px',
+                    textAlign:
+                      (header.column.columnDef.meta as any)?.align || 'left',
+                  }}
+                >
+                  {header.isPlaceholder
+                    ? null
+                    : flexRender(
+                        header.column.columnDef.header,
+                        header.getContext()
+                      )}
+                </th>
+              );
+            })}
+          </tr>
+        ))}
+      </thead>
+      <tbody>
+        {table.getRowModel().rows.map((row) => (
+          <tr key={row.id}>
+            {row.getVisibleCells().map((cell) => (
+              <td
+                key={cell.id}
+                style={{
+                  textAlign:
+                    (cell.column.columnDef.meta as any)?.align || 'left',
+                }}
+              >
+                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+              </td>
             ))}
           </tr>
         ))}
-      </tfoot>
-    }
-  </table>
+      </tbody>
+      {showFooter && (
+        <tfoot>
+          {table.getFooterGroups().map((footerGroup) => (
+            <tr key={footerGroup.id}>
+              {footerGroup.headers.map((header) => (
+                <th key={header.id}>
+                  {header.isPlaceholder
+                    ? null
+                    : flexRender(
+                        header.column.columnDef.footer,
+                        header.getContext()
+                      )}
+                </th>
+              ))}
+            </tr>
+          ))}
+        </tfoot>
+      )}
+    </table>
+  );
 }
 
 export default FnTable;

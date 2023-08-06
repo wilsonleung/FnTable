@@ -2,8 +2,6 @@ import {
   CellContext,
   ColumnDef,
   ColumnHelper,
-  OnChangeFn,
-  Row,
   RowSelectionState,
   Updater,
   createColumnHelper,
@@ -22,9 +20,9 @@ type HeaderType<T> = string | ((childs: FnColumn<T>[]) => any);
 export interface FnColumn<T> {
   width?: number;
   header?: HeaderType<T>;
-  // todo: how to enforce the key is one of the object property or any string?
-  // key?: keyof T & string;
-  key?: string;
+
+  // from total typescript advanced react
+  key?: keyof T | (string & NonNullable<unknown>);
   alignment?: 'left' | 'right' | 'center';
   // only left node will render cell renderer
   cellRenderer?: (getValue: () => any) => any;
@@ -59,7 +57,7 @@ function buildColumns<T extends object>(
   if (column.childs && column.childs.length > 0) {
     const columns = column.childs.map((col) => buildColumns(helper, col));
     return helper.group({
-      id: column.key || '',
+      id: String(column.key || ''),
       header: buildHeader(column),
       columns,
     });
@@ -80,7 +78,7 @@ function buildColumns<T extends object>(
       return '';
     },
     {
-      id: column.key || '',
+      id: String(column.key || ''),
       header: buildHeader(column),
       size: column.width,
       cell,
@@ -179,8 +177,7 @@ function FnTable<T extends object>({
       size: defaultColumn?.width,
       meta: { align: defaultColumn?.alignment },
     },
-    enableRowSelection:
-      selectionMode === 'multiple' || selectionMode === 'single',
+    enableRowSelection: selectionMode === 'multiple' || selectionMode === 'single',
     enableMultiRowSelection: selectionMode === 'multiple',
     state: {
       rowSelection,
@@ -205,16 +202,12 @@ function FnTable<T extends object>({
                   colSpan={header.colSpan}
                   style={{
                     width: header.getSize() + 'px',
-                    textAlign:
-                      (header.column.columnDef.meta as any)?.align || 'left',
+                    textAlign: (header.column.columnDef.meta as any)?.align || 'left',
                   }}
                 >
                   {header.isPlaceholder
                     ? null
-                    : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext()
-                      )}
+                    : flexRender(header.column.columnDef.header, header.getContext())}
                 </th>
               );
             })}
@@ -228,8 +221,7 @@ function FnTable<T extends object>({
               <td
                 key={cell.id}
                 style={{
-                  textAlign:
-                    (cell.column.columnDef.meta as any)?.align || 'left',
+                  textAlign: (cell.column.columnDef.meta as any)?.align || 'left',
                 }}
               >
                 {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -246,10 +238,7 @@ function FnTable<T extends object>({
                 <th key={header.id}>
                   {header.isPlaceholder
                     ? null
-                    : flexRender(
-                        header.column.columnDef.footer,
-                        header.getContext()
-                      )}
+                    : flexRender(header.column.columnDef.footer, header.getContext())}
                 </th>
               ))}
             </tr>

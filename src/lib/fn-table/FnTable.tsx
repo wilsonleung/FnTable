@@ -8,6 +8,7 @@ import {
   flexRender,
   getCoreRowModel,
   useReactTable,
+  Row,
 } from '@tanstack/react-table';
 import React, { useCallback, useMemo } from 'react';
 
@@ -17,6 +18,8 @@ import SingleSelectCellRenderer from './display-columns/SingleSelectCellRenderer
 
 type HeaderType<T> = string | ((childs: FnColumn<T>[]) => any);
 
+type CellRendererContext<T> = { getValue: () => any; row: Row<T> };
+
 export interface FnColumn<T> {
   width?: number;
   header?: HeaderType<T>;
@@ -25,7 +28,7 @@ export interface FnColumn<T> {
   key?: keyof T | (string & NonNullable<unknown>);
   alignment?: 'left' | 'right' | 'center';
   // only left node will render cell renderer
-  cellRenderer?: (getValue: () => any) => any;
+  cellRenderer?: (context: CellRendererContext<T>) => any;
   childs?: FnColumn<T>[];
 }
 
@@ -67,7 +70,8 @@ function buildColumns<T extends object>(
   // let cell = col.cellRenderer ? (info: CellContext<T, unknown>) => col.cellRenderer(info.getValue) : (info: CellContext<T, any>) => info.getValue();
   let cell = (info: CellContext<T, any>) => info.getValue();
   if (typeof column.cellRenderer === 'function') {
-    cell = (info: CellContext<T, any>) => column.cellRenderer!(info.getValue);
+    const fn = column.cellRenderer;
+    cell = (info: CellContext<T, any>) => fn({ getValue: info.getValue, row: info.row });
   }
 
   return helper.accessor(

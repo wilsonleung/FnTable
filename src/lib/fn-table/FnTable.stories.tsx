@@ -26,7 +26,7 @@ const columns: FnColumn<Person>[] = [
   {
     key: 'married',
     header: 'Married',
-    cellRenderer: (getValue) =>
+    cellRenderer: ({ getValue }) =>
       getValue() ? (
         <span style={{ color: 'red' }}>Y</span>
       ) : (
@@ -36,7 +36,14 @@ const columns: FnColumn<Person>[] = [
   {
     key: '__action__',
     header: 'Action',
-    cellRenderer: () => <button type="button">Action</button>,
+    cellRenderer: ({ row }) => {
+      const onClick = () => console.log('[click] ...', row.id);
+      return (
+        <button type="button" onClick={onClick}>
+          Action
+        </button>
+      );
+    },
   },
 ];
 
@@ -63,7 +70,7 @@ const columnsWithGroup: FnColumn<Person>[] = [
   {
     key: 'married',
     header: 'Married',
-    cellRenderer: (getValue) =>
+    cellRenderer: ({ getValue }) =>
       getValue() ? (
         <span style={{ color: 'red' }}>Y</span>
       ) : (
